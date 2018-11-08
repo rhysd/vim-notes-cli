@@ -1,6 +1,12 @@
 let s:PATH_SEP = has('win32') ? '\' : '/'
 let s:REPO_ROOT = fnamemodify(expand('<sfile>'), ':p:h:h')
 
+function! s:echoerr(msg) abort
+    echohl ErrorMsg
+    echom a:msg
+    echohl None
+endfunction
+
 function! s:local_bin() abort
     let dir = get(g:, 'notes_cli_download_dir', s:REPO_ROOT)
 
@@ -22,9 +28,7 @@ function! s:local_bin() abort
     elseif has('unix')
         let platform = 'linux'
     else
-        echohl ErrorMsg
-        echom 'Unknown platform. Please set g:notes_cli_platform_name'
-        echohl None
+        call s:echoerr('Unknown platform. Please set g:notes_cli_platform_name')
         return ''
     endif
 
@@ -36,24 +40,18 @@ function! s:local_bin() abort
     let zippath = dir . s:PATH_SEP . archive
 
     if !executable('curl')
-        echohl ErrorMsg
-        echom '`curl` command is necessary to download binary'
-        echohl None
+        call s:echoerr('`curl` command is necessary to download binary')
         return ''
     endif
 
     if !executable('unzip')
-        echohl ErrorMsg
-        echom '`unzip` command is necessary to unzip downloaded archive'
-        echohl None
+        call s:echoerr('`unzip` command is necessary to unzip downloaded archive')
         return ''
     endif
 
     let out = system("curl -Ls -o /dev/null -w '%{url_effective}' https://github.com/rhysd/notes-cli/releases/latest")
     if v:shell_error
-        echohl ErrorMsg
-        echom 'Cannot get redurect URL: ' . out
-        echohl None
+        call s:echoerr('Cannot get redurect URL: ' . out)
         return ''
     endif
     let tag = split(out, '/')[-1]
@@ -65,17 +63,13 @@ function! s:local_bin() abort
     let unzip_cmd = printf('unzip %s -d %s', shellescape(zippath), shellescape(dir))
     let out = system(curl_cmd . ' && ' . unzip_cmd)
     if v:shell_error
-        echohl ErrorMsg
-        echom 'Downloading with curl and unarchiving with unzip failed: ' . out
-        echohl None
+        call s:echoerr('Downloading with curl and unarchiving with unzip failed: ' . out)
         return ''
     endif
 
     " verify
     if !filereadable(binpath)
-        echohl ErrorMsg
-        echom 'Executable was not downloaded successfully. Please check following directory and set g:notes_cli_bin manually: ' . dir
-        echohl None
+        call s:echoerr('Executable was not downloaded successfully. Please check following directory and set g:notes_cli_bin manually: ' . dir)
         return ''
     endif
 
@@ -102,9 +96,7 @@ function! s:notes_cmd(args) abort
     let args = map(copy(a:args), 'shellescape(v:val)')
     let out = system(bin . ' ' . join(args, ' '))
     if v:shell_error
-        echohl ErrorMsg
-        echom out
-        echohl None
+        call s:echoerr(out)
         return ''
     endif
     if out =~# '\n$'
@@ -140,9 +132,7 @@ function! notescli#select(args) abort
     elseif executable('peco')
         let selector = 'peco'
     else
-        echohl ErrorMsg
-        echom '`peco` nor `fzf` is not available. Please set g:notes_cli_selector_cmd'
-        echohl None
+        call s:echoerr('`peco` nor `fzf` is not available. Please set g:notes_cli_selector_cmd')
         return
     endif
 
