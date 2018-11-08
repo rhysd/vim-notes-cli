@@ -1,4 +1,89 @@
 let s:PATH_SEP = has('win32') ? '\' : '/'
+let s:REPO_ROOT = fnamemodify(expand('<sfile>'), ':p:h:h')
+
+function! s:local_bin() abort
+    let dir = get(g:, 'notes_cli_download_dir', s:REPO_ROOT)
+
+    let binpath = dir . s:PATH_SEP . 'notes'
+    if has('win32')
+        let binpath .= '.exe'
+    endif
+
+    if filereadable(binpath)
+        return binpath
+    endif
+
+    if exists('g:notes_cli_platform_name')
+        let platform = g:notes_cli_platform_name
+    elseif has('win32')
+        let platform = 'windows'
+    elseif has('mac')
+        let platform = 'darwin'
+    elseif has('unix')
+        let platform = 'linux'
+    else
+        echohl ErrorMsg
+        echom 'Unknown platform. Please set g:notes_cli_platform_name'
+        echohl None
+        return ''
+    endif
+
+    let suffix = '.zip'
+    if has('win32')
+        let suffix = '.exe' . suffix
+    endif
+    let archive = 'notes_' . platform . '_amd64' . suffix
+    let zippath = dir . s:PATH_SEP . archive
+
+    if !executable('curl')
+        echohl ErrorMsg
+        echom '`curl` command is necessary to download binary'
+        echohl None
+        return ''
+    endif
+
+    if !executable('unzip')
+        echohl ErrorMsg
+        echom '`unzip` command is necessary to unzip downloaded archive'
+        echohl None
+        return ''
+    endif
+
+    let out = system("curl -Ls -o /dev/null -w '%{url_effective}' https://github.com/rhysd/notes-cli/releases/latest")
+    if v:shell_error
+        echohl ErrorMsg
+        echom 'Cannot get redurect URL: ' . out
+        echohl None
+        return ''
+    endif
+    let tag = split(out, '/')[-1]
+
+    let url = printf('https://github.com/rhysd/notes-cli/releases/download/%s/%s', tag, archive)
+    echom 'Downloading and unarchiving the latest executable from ' . url . ' to ' . dir
+
+    let curl_cmd = printf('curl -L -o %s %s 2>&1', shellescape(zippath), shellescape(url))
+    let unzip_cmd = printf('unzip %s -d %s', shellescape(zippath), shellescape(dir))
+    let out = system(curl_cmd . ' && ' . unzip_cmd)
+    if v:shell_error
+        echohl ErrorMsg
+        echom 'Downloading with curl and unarchiving with unzip failed: ' . out
+        echohl None
+        return ''
+    endif
+
+    " verify
+    if !filereadable(binpath)
+        echohl ErrorMsg
+        echom 'Executable was not downloaded successfully. Please check following directory and set g:notes_cli_bin manually: ' . dir
+        echohl None
+        return ''
+    endif
+
+    call delete(zippath)
+
+    return binpath
+endfunction
+
 function! s:notes_bin() abort
     if exists('g:notes_cli_bin')
         return g:notes_cli_bin
@@ -6,13 +91,16 @@ function! s:notes_bin() abort
     if executable('notes')
         return 'notes'
     endif
-    " TODO: Download notes binary automatically
-    return 'notes'
+    return s:local_bin()
 endfunction
 
 function! s:notes_cmd(args) abort
+    let bin = s:notes_bin()
+    if bin ==# ''
+        return
+    endif
     let args = map(copy(a:args), 'shellescape(v:val)')
-    let out = system(s:notes_bin() . ' ' . join(args, ' '))
+    let out = system(bin . ' ' . join(args, ' '))
     if v:shell_error
         echohl ErrorMsg
         echom out
@@ -58,7 +146,11 @@ function! notescli#select(args) abort
         return
     endif
 
-    let cmd = [s:notes_bin(), 'list', '--oneline'] + a:args
+    let bin = s:notes_bin()
+    if bin ==# ''
+        return
+    endif
+    let cmd = [bin, 'list', '--oneline'] + a:args
     let cmd = join(cmd, ' ') . ' | ' . selector
     if has('win32')
         let cmd = ['cmd', '/c', cmd]
@@ -113,8 +205,12 @@ function! notescli#open_first_i_am_feeling_lucky(args) abort
 endfunction
 
 function! notescli#list(args) abort
+    let bin = s:notes_bin()
+    if bin ==# ''
+        return
+    endif
     let args = join(a:args, ' ')
-    let cmdline = 'terminal ' . s:notes_bin() . ' list --oneline'
+    let cmdline = 'terminal ' . bin . ' list --oneline'
     if args !=# ''
         let cmdline .= ' ' . args
     endif
@@ -131,7 +227,11 @@ function notescli#grep(pat) abort
 endfunction
 
 function! notescli#notes(args_str) abort
-    let cmdline = 'terminal ' . s:notes_bin()
+    let bin = s:notes_bin()
+    if bin ==# ''
+        return
+    endif
+    let cmdline = 'terminal ' . bin
     if a:args_str !=# ''
         let cmdline .= ' ' . a:args_str
     endif
