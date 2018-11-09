@@ -100,10 +100,10 @@ endfunction
 function! s:notes_cmd(args) abort
     let bin = s:notes_bin()
     if bin ==# ''
-        return
+        return ''
     endif
     let args = map(copy(a:args), 'shellescape(v:val)')
-    let out = system(bin . ' ' . join(args, ' '))
+    let out = system(bin . ' --no-color ' . join(args, ' '))
     if v:shell_error
         call s:echoerr(out)
         return ''
@@ -114,6 +114,62 @@ function! s:notes_cmd(args) abort
     return out
 endfunction
 
+function! s:completion(subcmd, lead) abort
+    let args = ['help']
+    if a:subcmd !=# ''
+        let args += [a:subcmd]
+    endif
+
+    let lines = split(s:notes_cmd(args), '\n')
+    if empty(lines)
+        return []
+    endif
+
+    if a:subcmd ==# ''
+        let idx = index(lines, 'Commands:')
+        if idx == -1
+            return []
+        endif
+        let ret = []
+        for l in lines[idx+1:]
+            let cmd = matchstr(l, '^  \zs\h\w*\ze\>')
+            if cmd ==# ''
+                continue
+            endif
+            let ret += [cmd]
+        endfor
+        if ret != [] && a:lead !=# ''
+            call filter(ret, 'v:val =~# ''^' . a:lead . "'")
+        endif
+        return ret
+    endif
+
+    let idx = index(lines, 'Flags:')
+    if idx == -1
+        return []
+    endif
+    let ret = []
+    for l in lines[idx+1:]
+        let cmds = matchstr(l, '^\s\+\zs-\h, --\h[[:alnum:]-]\+')
+        if cmds !=# ''
+            let ret += split(cmds, ',\s\+')
+            continue
+        endif
+        let cmd = matchstr(l, '^\s\+\zs--\h[[:alnum:]-]\+')
+        if cmd !=# ''
+            let ret += [cmd]
+            continue
+        endif
+    endfor
+    if ret != [] && a:lead !=# ''
+        call filter(ret, 'v:val =~# ''^' . a:lead . "'")
+    endif
+    return ret
+endfunction
+
+function! notescli#c_list(lead, cmdline, col) abort
+    return s:completion('list', a:lead)
+endfunction
 function! s:on_peco_close(ch) dict abort
     let lines = readfile(self.tmp)
     call delete(self.tmp)
@@ -168,6 +224,9 @@ function! notescli#select(args) abort
     let ctx.bufnr = term_start(cmd, options)
 endfunction
 
+function! notescli#c_new(lead, cmdline, col) abort
+    return s:completion('new', a:lead)
+endfunction
 function! notescli#new(...) abort
     if has_key(a:, 1)
         let cat = a:1
@@ -252,8 +311,16 @@ function! notescli#list(args) abort
     nnoremap <buffer><CR> :<C-u>call <SID>open_notes_under_cursor()<CR>
 endfunction
 
+function! notescli#c_grep(lead, cmdline, col) abort
+     " Omit 'NotesGrep ' by 10:
+    let args = a:cmdline[10 : a:col]
+    if args =~# '\s\+/'
+        return []
+    endif
+    return filter(s:completion('list', a:lead), 'v:val =~# ''^-c\|--category\|-t\|--tag$''')
+endfunction
 function notescli#grep(args_str) abort
-    let idx = match(a:args_str, '\s\+\ze/[^/]\+/')
+    let idx = match(a:args_str, '\s\+\ze/[^/]*/')
     if idx <= 0
         let pathlist = s:notes_cmd(['list'])
         let pat = a:args_str
@@ -274,6 +341,15 @@ function notescli#grep(args_str) abort
     endif
 endfunction
 
+function! notescli#c_notes(lead, cmdline, col) abort
+     " Omit 'Notes ' by 6:
+    let args = split(a:cmdline[6 : a:col])
+    let l = len(args)
+    if l == 0 || (l == 1 && a:lead !=# '')
+        return s:completion('', a:lead)
+    endif
+    return s:completion(args[0], a:lead)
+endfunction
 function! notescli#notes(args_str) abort
     let bin = s:notes_bin()
     if bin ==# ''

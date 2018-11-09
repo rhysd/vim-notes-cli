@@ -38,6 +38,8 @@ installs `notes` executable and uses it locally.
 
 You can read manual by `:help vim-notes-cli` after installation.
 
+All commands can be completed while input. Please input `<TAB>` to complete arguments.
+
 ### `:NotesSelect [{args}...]`
 
 It selects one (or multiple) of candidates with [peco][] or [fzf][] and opens selected notes with new Vim buffers.

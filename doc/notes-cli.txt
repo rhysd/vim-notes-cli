@@ -58,7 +58,10 @@ minpac: https://github.com/k-takata/minpac
 ==============================================================================
 USAGE                                                      *vim-notes-cli-usage*
 
-Following commands are available
+Following commands and variables are available.
+
+All commands can be completed while input. Please input <TAB> to complete
+arguments.
 
 
 ------------------------------------------------------------------------------
