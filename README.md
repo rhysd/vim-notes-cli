@@ -29,6 +29,9 @@ call minpac#add('rhysd/vim-notes-cli')
 
 When you're using Vim's builtin packager, please follow instruction at `:help pack-add`.
 
+Even if you didn't install [notes-cli][], you don't need to install it. vim-notes-cli automatically
+installs `notes` executable and uses it locally.
+
 
 
 ## Usage
@@ -88,15 +91,22 @@ with prompt.
 ```
 
 
-### `:NotesGrep {pattern}`
+### `:NotesGrep [{args}] /pattern/`
 
-It searches all notes with `:vimgrep`. `{pattern}` is passed to first argument of `:vimgrep`. Please see
+It searches notes with `:vimgrep`. `/pattern/` is passed to first argument of `:vimgrep`. If `{args}` is given,
+it is passed to `notes list` to get file paths of notes. By default, `:vimgrep` searches all notes.  Please see
 `:help vimgrep` for details of `:vimgrep` command.
 
 **Example:** Search 'open file' in all notes
 
 ```
 :NotesGrep /open file/
+```
+
+**Example:** Search 'open file' in notes tagged with 'Go'
+
+```
+:NotesGrep -t Go /open file/
 ```
 
 

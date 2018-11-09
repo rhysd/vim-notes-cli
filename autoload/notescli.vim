@@ -207,13 +207,26 @@ function! notescli#list(args) abort
     execute cmdline
 endfunction
 
-function notescli#grep(pat) abort
-    let home = s:notes_cmd(['config', 'home'])
-    if home ==# ''
+function notescli#grep(args_str) abort
+    let idx = match(a:args_str, '\s\+\ze/[^/]\+/')
+    if idx <= 0
+        let pathlist = s:notes_cmd(['list'])
+        let pat = a:args_str
+    else
+        let pathlist = s:notes_cmd(['list'] + split(a:args_str[:idx], '\s\+'))
+        let pat = a:args_str[idx:]
+    endif
+
+    if empty(pathlist)
+        echo 'No note was found'
         return
     endif
-    let glob = home . s:PATH_SEP . '*' . s:PATH_SEP . '*.md'
-    execute 'vimgrep' a:pat glob
+
+    execute 'vimgrep' pat substitute(pathlist, '\n', ' ', 'g')
+
+    if get(g:, 'notes_cli_open_quickfix_on_grep', 1) && len(getqflist()) > 1
+        copen
+    endif
 endfunction
 
 function! notescli#notes(args_str) abort
