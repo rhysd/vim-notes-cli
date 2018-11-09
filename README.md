@@ -1,5 +1,5 @@
-Small Vim plugin for [notes-cli][]
-==================================
+Markdown note taking on Vim with [notes-cli][]
+==============================================
 
 This is a Vim plugin to use [notes-cli][] more effectively on Vim (Vim8 or later).
 
