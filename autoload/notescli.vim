@@ -82,10 +82,19 @@ function! s:notes_bin() abort
     if exists('g:notes_cli_bin')
         return g:notes_cli_bin
     endif
+
     if executable('notes')
-        return 'notes'
+        let g:notes_cli_bin = 'notes'
+        return g:notes_cli_bin
     endif
-    return s:local_bin()
+
+    let bin = s:local_bin()
+    if bin !=# ''
+        let g:notes_cli_bin = bin
+        return g:notes_cli_bin
+    endif
+
+    return ''
 endfunction
 
 function! s:notes_cmd(args) abort
