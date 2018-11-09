@@ -1,0 +1,241 @@
+*notes-cli.txt*           Manage markdown notes with notes-cli
+
+Author : rhysd <lin90162@yahoo.co.jp>
+
+CONTENTS                *vim-notes-cli-contents*
+
+Introduction            |vim-notes-cli-introduction|
+Install                 |vim-notes-cli-install|
+Usage                   |vim-notes-cli-usage|
+Commands                |vim-notes-cli-commands|
+Variables               |vim-notes-cli-variables|
+Repository              |vim-notes-cli-repository-page|
+License                 |vim-notes-cli-license|
+
+
+
+==============================================================================
+INTRODUCTION                                        *vim-notes-cli-introduction*
+
+*vim-notes-cli* is a Vim plugin to use notes-cli more effectively on Vim (Vim8
+or later).
+notes-cli is a command line tool to manage your markdown notes.
+
+https://github.com/rhysd/notes-cli
+
+
+
+==============================================================================
+INSTALL                                                  *vim-notes-cli-install*
+
+If you use any package manager, please follow its instruction.
+
+With vim-plug:
+>
+  Plug 'rhysd/vim-notes-cli'
+<
+With dein.vim:
+>
+  call dein#add('rhysd/vim-notes-cli')
+<
+With minpac:
+>
+  call minpac#add('rhysd/vim-notes-cli')
+<
+When you're using Vim's builtin packager, please follow instruction at
+|pack-add|.
+
+Installing notes-cli is optional. You don't need to install it manually.
+|vim-notes-cli| automatically installs `notes` executable and uses it locally
+if it is not installed yet.
+
+vim-plug: https://github.com/junegunn/vim-plug
+dein.vim: https://github.com/Shougo/dein.vim
+minpac: https://github.com/k-takata/minpac
+
+
+
+==============================================================================
+USAGE                                                      *vim-notes-cli-usage*
+
+Following commands are available
+
+
+------------------------------------------------------------------------------
+COMMANDS                                                *vim-notes-cli-commands*
+
+  *:NotesSelect* [{args}...]
+
+    It selects one (or multiple) of candidates with `peco` or `fzf` and opens
+    selected notes with new Vim buffers. You can specify a command to select
+    by |g:notes_cli_select_cmd| and how to open buffer by |g:notes_cli_edit_cmd|.
+
+    All arguments are passed to `notes list` command. You can specify category
+    and/or tags by `-c` and/or `-t` options.
+
+    Example: Only targets "blog" category and "Go" tag.
+>
+      :NotesSelect -c blog -t Go
+<
+    And you can specify the order of list by `-s`.
+
+    Example: Sort the list with modified date (default is created date)
+>
+      :NotesSelect -s modified
+<
+    peco: https://github.com/peco/peco
+    fzf: https://github.com/junegunn/fzf
+
+
+  *:NotesFeelingLucky* [{args}...]
+
+    It is similar to |:NotesSelect|, but does not select one from list. It
+    always select the first candidate like `notes list | head -1`. This is
+    useful when you want to open the last created/modified note.
+
+    Example: Open last-modified note
+>
+      :NotesFeelingLucky
+<
+    Example: Open last-created note
+>
+      :NotesFeelingLucky -s created
+<
+    {args} is passed to `notes list` command.
+
+
+  *:NotesNew* [{category} [{file}]]
+
+    It creates new note with specified category and file name. If they are
+    omitted, it asks them interactively with prompt.
+
+    Example: Create 'how-to-open-file.md' with "memo" category
+>
+      :NotesNew memo how-to-open-file
+<
+
+  *:NotesGrep* [{args}] /pattern/
+
+    It searches notes with |:vimgrep|. /pattern/ is passed to first argument of
+    |:vimgrep|. If {args} is given, it is passed to `notes list` to get file paths
+    of notes. By default, |:vimgrep| searches all notes.
+
+    Example: Search 'open file' in all notes
+>
+      :NotesGrep /open file/
+<
+    Example: Search 'open file' in notes tagged with 'Go'
+>
+      :NotesGrep -t Go /open file/
+<
+
+  *:NotesList* [{args}...]
+
+    It shows list of notes with colors. By default, it outputs the result of
+    `notes --oneline`.
+
+    Example: Output list of note with one note per line
+>
+      :NotesList
+<
+    Example: Output full information of each note (path, metadata, title,
+             body)
+>
+      :NotesList -f
+<
+
+  *:Notes* {args}...
+
+    It runs `notes` command with {args}. Command is run with |:terminal|
+
+    Example: Show help of `notes` command
+>
+      :Notes help
+<
+    Example: Update `notes` executable
+>
+      :Notes selfupdate
+<
+
+------------------------------------------------------------------------------
+VARIABLES                                              *vim-notes-cli-variables*
+
+  *g:notes_cli_bin* |String|
+
+  File path or command name of "notes" executable in your environment. If this
+  variable is not set and "notes" command is globally available, it is used.
+  If there is no "notes" installation, |vim-notes-cli| downloads the latest
+  version from GitHub repository and use it locally.
+
+  *g:notes_cli_selector_cmd* |String|
+
+  Filter command to search notes incrementally. By default, "fzf" or "peco"
+  command is used if available.
+
+  *g:notes_cli_edit_cmd* |String|
+
+  Vim command to open notes by |:NotesSelect|. For example, if you want to
+  open notes by splitting a window vertically, "vsplit" should be set to this
+  variable. If not set, |:edit!| will be used.
+
+  *g:notes_cli_platform_name* |String|
+
+  Name of your platform. Platform name is usually detected automatically so
+  you don't need to set this variable. However, if you're using "freebsd" or
+  "netbsd" or "openbsd", please set it to this variable.
+
+  *g:notes_cli_download_dir* |String|
+
+  When downloading "notes" executable by this plugin automatically, the
+  directory path specified by this variable is used. A downloaded executable
+  is put in the directory. If this variable is not set, the executable is put
+  in "../../autoload/notescli.vim".
+
+  *g:notes_cli_open_quickfix_on_grep* |Number|
+
+  When this variable is set to 1, |quickfix| window is automatically open after
+  searching notes with |:vimgrep| on more than one results. This variable is
+  set to 1 by default.
+
+
+
+==============================================================================
+REPOSITORY PAGE                                  *vim-notes-cli-repository-page*
+
+The repository of |vim-notes-cli| is hosted on GitHub.
+
+https://github.com/rhysd/vim-notes-cli
+
+If you're seeing some bug or have a feature request, please create an issue at
+the repository.
+
+
+
+==============================================================================
+LICENSE                                                  *vim-notes-cli-license*
+
+|vim-notes-cli| is distributed under The MIT license.
+
+  Copyright (c) 2018 rhysd
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:et:fen:fdl=0:
