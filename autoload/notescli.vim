@@ -194,6 +194,41 @@ function! notescli#open_first_i_am_feeling_lucky(args) abort
     execute 'edit!' first
 endfunction
 
+if has('win32')
+    function! s:is_absolute(path) abort
+        return a:path =~# '^[a-zA-Z]:[/\\]'
+    endfunction
+else
+    function! s:is_absolute(path) abort
+        return a:path[0] ==# '/'
+    endfunction
+endif
+
+function! s:open_notes_under_cursor() abort
+    let fields = split(getline('.'), '\s\+')
+    if len(fields) == 0
+        echo 'No list item found under cursor'
+        return
+    endif
+
+    let path = fields[0]
+    if !s:is_absolute(path)
+        let home = s:notes_cmd(['config', 'home'])
+        if home ==# ''
+            return
+        endif
+        let path = home . s:PATH_SEP . path
+    endif
+
+    if !filereadable(path)
+        call s:echoerr('File does not exist: ' . path)
+        return
+    endif
+
+    let cmd = get(g:, 'notes_cli_edit_cmd', 'edit!')
+    execute cmd path
+endfunction
+
 function! notescli#list(args) abort
     let bin = s:notes_bin()
     if bin ==# ''
@@ -205,6 +240,7 @@ function! notescli#list(args) abort
         let cmdline .= ' ' . args
     endif
     execute cmdline
+    nnoremap <buffer><CR> :<C-u>call <SID>open_notes_under_cursor()<CR>
 endfunction
 
 function notescli#grep(args_str) abort

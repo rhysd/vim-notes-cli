@@ -128,6 +128,9 @@ It shows list of notes with colors. By default, it outputs the result of `notes 
 :NotesList -f
 ```
 
+When the cursor is on file path, entering `<CR>` opens the note in new buffer.
+
+
 ### `:Notes {args}...`
 
 It runs `notes` command with `{args}`. Command is run with `:terminal`.

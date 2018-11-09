@@ -143,6 +143,9 @@ COMMANDS                                                *vim-notes-cli-commands*
 >
       :NotesList -f
 <
+    When the cursor is on file path, entering <CR> opens the note in new
+    buffer.
+
 
   *:Notes* {args}...
 
