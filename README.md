@@ -3,6 +3,8 @@ Small Vim plugin for [notes-cli][]
 
 This is a Vim plugin to use [notes-cli][] more effectively on Vim (Vim8 or later).
 
+![screencast](https://github.com/rhysd/ss/blob/master/vim-notes-cli/demo.gif?raw=true)
+
 
 
 ## Installation

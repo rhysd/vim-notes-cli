@@ -23,6 +23,9 @@ notes-cli is a command line tool to manage your markdown notes.
 
 https://github.com/rhysd/notes-cli
 
+Screenshot:
+https://github.com/rhysd/ss/blob/master/vim-notes-cli/demo.gif?raw=true
+
 
 
 ==============================================================================
