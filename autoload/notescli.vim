@@ -170,7 +170,7 @@ endfunction
 function! notescli#c_list(lead, cmdline, col) abort
     return s:completion('list', a:lead)
 endfunction
-function! s:on_peco_close(ch) dict abort
+function! s:on_selector_close(ch) dict abort
     let lines = readfile(self.tmp)
     call delete(self.tmp)
 
@@ -190,15 +190,15 @@ function! s:on_peco_close(ch) dict abort
     endfor
 endfunction
 function! notescli#select(args) abort
-    if exists('g:notes_cli_selector_cmd')
-        let selector = g:notes_cli_selector_cmd
-    elseif executable('fzf')
-        let selector ='fzf'
-    elseif executable('peco')
-        let selector = 'peco'
-    else
-        call s:echoerr('`peco` nor `fzf` is not available. Please set g:notes_cli_selector_cmd')
-        return
+    if !exists('g:notes_cli_selector_cmd')
+        if executable('fzf')
+            let g:notes_cli_selector_cmd ='fzf'
+        elseif executable('peco')
+            let g:notes_cli_selector_cmd ='peco'
+        else
+            call s:echoerr('`peco` nor `fzf` is not available. Please set g:notes_cli_selector_cmd')
+            return
+        endif
     endif
 
     let bin = s:notes_bin()
@@ -206,7 +206,7 @@ function! notescli#select(args) abort
         return
     endif
     let cmd = [bin, 'list', '--oneline'] + a:args
-    let cmd = join(cmd, ' ') . ' | ' . selector
+    let cmd = join(cmd, ' ') . ' | ' . g:notes_cli_selector_cmd
     if has('win32')
         let cmd = ['cmd', '/c', cmd]
     else
@@ -215,11 +215,11 @@ function! notescli#select(args) abort
 
     let ctx = {'tmp': tempname()}
     let options = {
-        \   'term_name' : 'notes: list | peco',
+        \   'term_name' : 'notes: list | ' . g:notes_cli_selector_cmd,
         \   'term_finish' : 'close',
         \   'out_io' : 'file',
         \   'out_name' : ctx.tmp,
-        \   'close_cb' : function('s:on_peco_close', [], ctx),
+        \   'close_cb' : function('s:on_selector_close', [], ctx),
         \ }
     let ctx.bufnr = term_start(cmd, options)
 endfunction
