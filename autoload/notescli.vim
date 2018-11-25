@@ -239,7 +239,7 @@ function! notescli#new(...) abort
         let name = input('filename?: ')
     endif
     let tags = get(a:, 3, '')
-    let out = s:notes_cmd(['new', '--no-inline-input', cat, name, tags])
+    let out = s:notes_cmd(['new', '--no-edit', cat, name, tags])
     if out ==# ''
         return
     endif
