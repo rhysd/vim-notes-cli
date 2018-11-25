@@ -1,5 +1,5 @@
-Markdown note taking on Vim with [notes-cli][]
-==============================================
+Vim + [notes-cli][] for Markdown note taking
+============================================
 
 This is a Vim plugin to use [notes-cli][] more effectively on Vim (Vim8 or later).
 
@@ -150,6 +150,7 @@ It runs `notes` command with `{args}`. Command is run with `:terminal`.
 ```
 :Notes selfupdate
 ```
+
 
 
 ## License
