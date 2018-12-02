@@ -97,11 +97,13 @@ with prompt.
 ```
 
 
-### `:NotesGrep [{args}] /pattern/`
+### `:NotesGrep [[{args}] /pattern/]`
 
 It searches notes with `:vimgrep`. `/pattern/` is passed to first argument of `:vimgrep`. If `{args}` is given,
 it is passed to `notes list` to get file paths of notes. By default, `:vimgrep` searches all notes.  Please see
 `:help vimgrep` for details of `:vimgrep` command.
+
+When no argument is given, it asks a pattern with propmt.
 
 **Example:** Search 'open file' in all notes
 

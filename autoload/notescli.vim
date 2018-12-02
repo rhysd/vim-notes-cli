@@ -328,13 +328,18 @@ function! notescli#c_grep(lead, cmdline, col) abort
     return filter(s:completion('list', a:lead), 'v:val =~# ''^-c\|--category\|-t\|--tag$''')
 endfunction
 function notescli#grep(args_str) abort
-    let idx = match(a:args_str, '\s\+\ze/[^/]*/')
-    if idx <= 0
+    if a:args_str =~# '^\s*$'
         let pathlist = s:notes_cmd(['list'])
-        let pat = a:args_str
+        let pat = input('Pattern in Vim regex?: ')
     else
-        let pathlist = s:notes_cmd(['list'] + split(a:args_str[:idx], '\s\+'))
-        let pat = a:args_str[idx:]
+        let idx = match(a:args_str, '\s\+\ze/[^/]*/')
+        if idx <= 0
+            let pathlist = s:notes_cmd(['list'])
+            let pat = a:args_str
+        else
+            let pathlist = s:notes_cmd(['list'] + split(a:args_str[:idx], '\s\+'))
+            let pat = a:args_str[idx:]
+        endif
     endif
 
     if empty(pathlist)
