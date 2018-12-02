@@ -307,7 +307,15 @@ function! notescli#list(args) abort
     if args !=# ''
         let cmdline .= ' ' . args
     endif
-    execute cmdline
+    let pager = $NOTES_CLI_PAGER
+    let $NOTES_CLI_PAGER = ''
+    try
+        execute cmdline
+    finally
+        if pager !=# ''
+            let pager = $NOTES_CLI_PAGER
+        endif
+    endtry
     nnoremap <buffer><CR> :<C-u>call <SID>open_notes_under_cursor()<CR>
 endfunction
 
