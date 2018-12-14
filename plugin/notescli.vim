@@ -2,7 +2,7 @@ if (exists('g:loaded_notes_cli') && g:loaded_notes_cli) || &cp
     finish
 endif
 
-command! -nargs=+ -complete=customlist,notescli#c_notes Notes call notescli#notes(<q-args>)
+command! -nargs=* -complete=customlist,notescli#c_notes Notes call notescli#notes(<q-args>)
 command! -nargs=* -complete=customlist,notescli#c_list NotesSelect call notescli#select([<f-args>])
 command! -nargs=* -complete=customlist,notescli#c_new NotesNew call notescli#new(<f-args>)
 command! -nargs=* -complete=customlist,notescli#c_list NotesFeelingLucky call notescli#open_first_i_am_feeling_lucky([<f-args>])
