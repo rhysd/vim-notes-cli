@@ -20,7 +20,10 @@ Plug 'rhysd/vim-notes-cli'
 With [dein.vim](https://github.com/Shougo/dein.vim):
 
 ```vim
-call dein#add('rhysd/vim-notes-cli')
+call dein#add('rhysd/vim-notes-cli', {
+            \   'lazy' : 1,
+            \   'on_cmd' : ['Notes', 'NotesSelect', 'NotesNew', 'NotesList', 'NotesGrep'],
+            \ })
 ```
 
 With [minpac](https://github.com/k-takata/minpac):
